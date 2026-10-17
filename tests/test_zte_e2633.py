@@ -166,5 +166,76 @@ class CamBienTest(unittest.TestCase):
         self.assertTrue(set(truong) <= set(mau[0]), set(truong) - set(mau[0]))
 
 
+class CauTrucTest(unittest.TestCase):
+    """Phần kiểm được mà không cần Home Assistant."""
+
+    def test_dem_theo_bang(self):
+        from zte_e2633.parser import dem_theo_bang
+        ds = phan_tich_thiet_bi(json.loads((FIX / "zte_e2633_clients.json").read_text(encoding="utf-8")))
+        self.assertEqual(dem_theo_bang(ds, "2.4G") + dem_theo_bang(ds, "5G"), len([m for m in ds if m["band"] in ("2.4G", "5G")]))
+        self.assertEqual(dem_theo_bang([], "5G"), 0)
+
+    def test_dich_vi_va_en_cung_khoa_va_co_tuy_chon(self):
+        def khoa(d, tien_to=""):
+            ra = set()
+            for k, v in d.items():
+                ra |= khoa(v, f"{tien_to}{k}.") if isinstance(v, dict) else {f"{tien_to}{k}"}
+            return ra
+        thu_muc = ROOT / "custom_components" / "zte_e2633"
+        vi = json.loads((thu_muc / "translations" / "vi.json").read_text(encoding="utf-8"))
+        en = json.loads((thu_muc / "translations" / "en.json").read_text(encoding="utf-8"))
+        self.assertEqual(khoa(vi), khoa(en))
+        self.assertIn("options.step.init.data.chu_ky", khoa(vi))
+        self.assertIn("config.step.user.data.host", khoa(vi))
+
+    def test_nen_tang_va_icon(self):
+        thu_muc = ROOT / "custom_components" / "zte_e2633"
+        nguon = (thu_muc / "__init__.py").read_text(encoding="utf-8")
+        self.assertIn("Platform.DEVICE_TRACKER", nguon)
+        self.assertTrue((thu_muc / "device_tracker.py").exists())
+        for ten in ("icon.png", "logo.png"):
+            self.assertEqual((thu_muc / "brand" / ten).read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
+
+
+class HienHetTest(unittest.TestCase):
+    """Mọi trường bộ phát trả về đều phải xuất hiện đâu đó (chuẩn hoá hoặc «goc»), không trường nào bị bỏ."""
+
+    def test_may_giu_moi_truong_goc(self):
+        from zte_e2633.parser import TEN_GOC_MAY
+        du = json.loads((FIX / "zte_e2633_clients.json").read_text(encoding="utf-8"))
+        goc = du["clientsData"]["1"]
+        may = phan_tich_thiet_bi(du)[0]
+        for ten_goc, v in goc.items():
+            if v in (None, ""):
+                continue
+            co = ten_goc in TEN_GOC_MAY.values() or ten_goc in may["goc"]
+            self.assertTrue(co, f"trường «{ten_goc}» bị mất")
+        self.assertEqual(may["rx_mbps"], int(goc["RxRateMbps"]))
+
+    def test_ap_giu_moi_truong_goc(self):
+        from zte_e2633.parser import TEN_GOC_AP
+        du = json.loads((FIX / "zte_e2633_ap.json").read_text(encoding="utf-8"))
+        goc = du["apData"]["1"]
+        ap = phan_tich_ap(du)
+        for ten_goc, v in goc.items():
+            if v in (None, ""):
+                continue
+            self.assertTrue(ten_goc in TEN_GOC_AP.values() or ten_goc in ap["goc"], f"trường «{ten_goc}» bị mất")
+
+
+class CamBienTungMayTest(unittest.TestCase):
+    def test_khoa_cam_bien_tung_may_co_that_trong_du_lieu(self):
+        """Mỗi cảm biến theo máy đọc một khoá có thật trong dữ liệu parser trả về (không đọc khoá ma)."""
+        import ast
+        nguon = (ROOT / "custom_components" / "zte_e2633" / "sensor.py").read_text(encoding="utf-8")
+        bang = next(n.value for n in ast.walk(ast.parse(nguon))
+                    if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "LOAI_CAM_BIEN_MAY")
+        khoa = {k.value: v.elts[1].value for k, v in zip(bang.keys, bang.values)}
+        may = phan_tich_thiet_bi(json.loads((FIX / "zte_e2633_clients.json").read_text(encoding="utf-8")))[0]
+        self.assertGreaterEqual(len(khoa), 6)
+        for loai, khoa_du_lieu in khoa.items():
+            self.assertIn(khoa_du_lieu, may, f"cảm biến «{loai}» đọc khoá «{khoa_du_lieu}» không có trong dữ liệu máy")
+
+
 if __name__ == "__main__":
     unittest.main()

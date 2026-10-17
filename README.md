@@ -4,6 +4,17 @@
 cảm biến. Dùng cùng card `mikrotik-topo-lan-card` qua tuỳ chọn `access_points[].clients_sensor`, để biết
 **máy nào vào WiFi, dùng băng tần nào, tín hiệu bao nhiêu**.
 
+## Có gì
+- **Mỗi máy WiFi là một thiết bị** (theo địa chỉ MAC, tên theo tên máy) với một thực thể theo dõi `device_tracker`: có mặt khi bộ phát
+  còn thấy máy, «không ở nhà» khi vắng. Máy mới vào WiFi tự được thêm; máy đã từng thấy vẫn còn sau khi khởi động lại Home Assistant.
+  Thuộc tính mỗi máy: `band`, `rssi`, `mode`, `assoc_s`, `rx_bps`, `tx_bps`, `ip_address`, `mac_address`.
+- **Cảm biến theo từng máy**, nằm trong chính thiết bị của máy đó: Cường độ tín hiệu (dBm), Băng tần, Chế độ WiFi, Địa chỉ IP,
+  Tốc độ nhận/gửi (Mbit/s), Thời gian kết nối. Máy vắng thì các cảm biến này «không có sẵn».
+- **Hiển thị hết**: mọi trường bộ phát trả về cho máy hoặc cho bộ phát đều hiện (chuẩn hoá hoặc nguyên tên gốc trong thuộc tính của
+  thực thể theo dõi / cảm biến **Bộ phát**), kể cả trường mới nếu phần mềm bộ phát thêm.
+- Cảm biến **Máy WiFi** (tổng số máy, thuộc tính `clients` cho card MikroTik), **Máy WiFi 2.4G** và **Máy WiFi 5G** (đếm theo băng tần).
+- Nút bánh răng (**Tuỳ chọn**): đổi chu kỳ đọc và kiểm chứng HTTPS mà không phải thêm lại.
+
 ## Chỉ đọc
 - Không ghi cấu hình, không đổi mật khẩu, không bật/tắt gì trên bộ phát.
 - Mỗi lần đọc chỉ đăng nhập tối đa một lần. Sau lỗi đăng nhập, tích hợp **tạm ngừng 30 phút** để không gõ
@@ -35,7 +46,7 @@ access_points:
 ## Dữ liệu cảm biến
 | Thuộc tính | Nội dung |
 |---|---|
-| `clients` | Danh sách máy: `mac`, `ip`, `name`, `band` (`2.4G`/`5G`), `rssi` (dBm), `mode`, `rx_bps`, `tx_bps` (giá trị thô của bộ phát, đơn vị chưa kiểm chứng) |
+| `clients` | Danh sách máy: `mac`, `ip`, `name`, `band` (`2.4G`/`5G`), `rssi` (dBm), `mode`, `rx_bps`, `tx_bps` (giá trị thô, bit/giây) |
 | `ap` | Thông tin bộ phát: `mac`, `ip`, `name`, `firmware` |
 
 ## Trạng thái kiểm chứng (nói thật)
@@ -51,7 +62,11 @@ access_points:
 Kho này từng là bản sao của một dự án khác; nay chỉ chứa mã tự viết, tên tích hợp là `zte_e2633` (khác `zte_tracker`). Sau khi HACS cập nhật:
 1. Xoá tích hợp `zte_tracker` cũ trong **Thiết bị & dịch vụ** và thêm **ZTE E2633** (nhập lại địa chỉ, tài khoản, mật khẩu).
 2. Cảm biến mới là `sensor.zte_e2633_<địa chỉ>_may_wifi`; sửa `clients_sensor` trong card cho khớp.
-3. Bản cũ có thực thể theo dõi từng máy (`device_tracker`); bản này chỉ có một cảm biến, thông tin từng máy nằm trong thuộc tính `clients`.
+3. Thực thể theo dõi từng máy (`device_tracker`) có lại, nhưng tên thực thể có thể khác bản cũ; kiểm tra lại các tự động hoá dùng chúng.
+
+## Icon
+Icon/logo là nhãn hiệu của ZTE Corporation, dùng để nhận diện thiết bị. Home Assistant đời mới đọc icon của tích hợp tuỳ chỉnh từ thư mục
+`brand/` trong tích hợp; bản cũ hơn có thể vẫn hiện «icon not available» (chỉ là hiển thị).
 
 ## Phát triển
 ```bash

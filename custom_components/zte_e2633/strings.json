@@ -28,5 +28,16 @@
       "already_configured": "Bộ phát này đã được thêm.",
       "reauth_successful": "Đã cập nhật mật khẩu."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tuỳ chọn ZTE E2633",
+        "data": {
+          "xac_minh_ssl": "Kiểm chứng chứng chỉ HTTPS (chỉ bật nếu có chứng chỉ hợp lệ)",
+          "chu_ky": "Chu kỳ đọc (giây)"
+        }
+      }
+    }
   }
 }

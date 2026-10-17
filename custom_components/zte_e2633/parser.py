@@ -9,6 +9,21 @@ import re
 from typing import Any
 
 BAND = {"1": "2.4G", "2": "5G"}
+
+#: Trường gốc của bộ phát đã được đổi sang tên chuẩn hoá (khoá chuẩn → tên gốc). Mọi trường gốc KHÁC đều được giữ nguyên
+#: tên trong «thuoc_tinh_goc» để hiển thị hết, không cần liệt kê thêm khi bộ phát có thêm trường.
+TEN_GOC_MAY = {"mac": "MacAddr", "ip": "IpAddr", "name": "HostName", "band": "AccessType", "rssi": "Rssi",
+               "mode": "WirelessMode", "assoc_s": "AssocTime", "rx_bps": "RxRateBps", "tx_bps": "TxRateBps",
+               "rx_mbps": "RxRateMbps", "tx_mbps": "TxRateMbps"}
+TEN_GOC_AP = {"mac": "MacAddr", "ip": "IpAddr", "name": "DeviceName", "firmware": "SoftwareVer",
+              "link_speed": "LinkSpeed", "role": "role", "backhaul_rssi": "BhStaRssi"}
+
+
+def thuoc_tinh_goc(muc: dict, da_dung: dict[str, str]) -> dict[str, str]:
+    """Mọi trường gốc (giá trị đơn giản) mà bảng chuẩn hoá chưa dùng, giữ nguyên tên gốc, giá trị cắt gọn."""
+    dung = set(da_dung.values())
+    return {str(k): str(v).strip()[:64] for k, v in muc.items()
+            if k not in dung and not isinstance(v, (dict, list)) and v not in (None, "")}
 MAC_RE = re.compile(r"^[0-9a-f]{2}(:[0-9a-f]{2}){5}$")
 
 
@@ -45,6 +60,9 @@ def phan_tich_thiet_bi(du_lieu: Any) -> list[dict]:
             "assoc_s": _so_nguyen(m.get("AssocTime")),
             "rx_bps": _so_nguyen(m.get("RxRateBps"), 0),
             "tx_bps": _so_nguyen(m.get("TxRateBps"), 0),
+            "rx_mbps": _so_nguyen(m.get("RxRateMbps")),
+            "tx_mbps": _so_nguyen(m.get("TxRateMbps")),
+            "goc": thuoc_tinh_goc(m, TEN_GOC_MAY),
         })
     return ra
 
@@ -62,4 +80,13 @@ def phan_tich_ap(du_lieu: Any) -> dict:
         "ip": str(a.get("IpAddr", ""))[:45],
         "name": str(a.get("DeviceName", ""))[:64],
         "firmware": str(a.get("SoftwareVer", ""))[:32],
+        "link_speed": _so_nguyen(a.get("LinkSpeed")),
+        "role": str(a.get("role", ""))[:16],
+        "backhaul_rssi": _so_nguyen(a.get("BhStaRssi")),
+        "goc": thuoc_tinh_goc(a, TEN_GOC_AP),
     }
+
+
+def dem_theo_bang(clients: list[dict], bang: str) -> int:
+    """Số máy đang kết nối ở một băng tần («2.4G» hoặc «5G»)."""
+    return sum(1 for m in clients if m.get("band") == bang)

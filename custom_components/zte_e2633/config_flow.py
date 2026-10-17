@@ -5,7 +5,8 @@ import re
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigEntry, ConfigFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
+from homeassistant.core import callback
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import selector
 
@@ -45,8 +46,28 @@ async def _kiem_thu(hass: HomeAssistant, du: dict[str, Any]) -> None:
     await hass.async_add_executor_job(may.doc_thiet_bi)
 
 
+class ZteOptionsFlow(OptionsFlow):
+    """Nút bánh răng: đổi chu kỳ đọc và kiểm chứng HTTPS (địa chỉ/tài khoản đổi bằng cách thêm lại)."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+        hien_tai = {**self.config_entry.data, **self.config_entry.options}
+        return self.async_show_form(step_id="init", data_schema=vol.Schema({
+            vol.Required(CONF_XAC_MINH_SSL, default=hien_tai.get(CONF_XAC_MINH_SSL, False)): bool,
+            vol.Required(CONF_CHU_KY, default=hien_tai.get(CONF_CHU_KY, CHU_KY_MAC_DINH)): vol.All(
+                vol.Coerce(int), vol.Range(min=CHU_KY_NHO_NHAT, max=CHU_KY_LON_NHAT)
+            ),
+        }))
+
+
 class ZteConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> ZteOptionsFlow:
+        return ZteOptionsFlow()
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         loi: dict[str, str] = {}

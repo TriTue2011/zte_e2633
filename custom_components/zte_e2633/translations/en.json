@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ZTE E2633",
+        "description": "Enter the address and admin account of the WiFi router. The integration only reads the client list.",
+        "data": {
+          "host": "IP address or hostname",
+          "ten": "Username",
+          "mat_khau": "Password",
+          "xac_minh_ssl": "Verify HTTPS certificate (only if the router has a valid one)",
+          "chu_ky": "Poll interval (seconds)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-enter the ZTE password",
+        "data": {
+          "mat_khau": "Password"
+        }
+      }
+    },
+    "error": {
+      "host_sai": "The address may only contain letters, digits, dots and hyphens.",
+      "dang_nhap": "Could not log in or read the client list. Check the username and password, and whether the router is logged in elsewhere.",
+      "ket_noi": "Cannot reach the router. Check the address and the network."
+    },
+    "abort": {
+      "already_configured": "This router is already added.",
+      "reauth_successful": "Password updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ZTE E2633 options",
+        "data": {
+          "xac_minh_ssl": "Verify HTTPS certificate (only if the router has a valid one)",
+          "chu_ky": "Poll interval (seconds)"
+        }
+      }
+    }
+  }
+}
