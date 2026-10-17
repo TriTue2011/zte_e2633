@@ -90,3 +90,12 @@ def phan_tich_ap(du_lieu: Any) -> dict:
 def dem_theo_bang(clients: list[dict], bang: str) -> int:
     """Số máy đang kết nối ở một băng tần («2.4G» hoặc «5G»)."""
     return sum(1 for m in clients if m.get("band") == bang)
+
+
+def tong_toc_do(clients: list[dict]) -> dict[str, int]:
+    """Tổng tốc độ nhận/gửi của mọi máy đang kết nối: Mbit/s và giá trị thô của bộ phát (RxRateBps/TxRateBps)."""
+    ra = {"rx_mbps": 0, "tx_mbps": 0, "rx_bps": 0, "tx_bps": 0}
+    for m in clients:
+        for khoa in ra:
+            ra[khoa] += m.get(khoa) or 0
+    return ra

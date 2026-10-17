@@ -237,5 +237,19 @@ class CamBienTungMayTest(unittest.TestCase):
             self.assertIn(khoa_du_lieu, may, f"cảm biến «{loai}» đọc khoá «{khoa_du_lieu}» không có trong dữ liệu máy")
 
 
+class TongTocDoTest(unittest.TestCase):
+    def test_tong_toc_do(self):
+        from zte_e2633.parser import tong_toc_do
+        ds = [{"rx_mbps": 5, "tx_mbps": 2, "rx_bps": 100, "tx_bps": 40}, {"rx_mbps": None, "tx_mbps": 3, "rx_bps": 0, "tx_bps": 7}]
+        self.assertEqual(tong_toc_do(ds), {"rx_mbps": 5, "tx_mbps": 5, "rx_bps": 100, "tx_bps": 47})
+        self.assertEqual(tong_toc_do([]), {"rx_mbps": 0, "tx_mbps": 0, "rx_bps": 0, "tx_bps": 0})
+
+    def test_moi_may_co_ca_rx_tx(self):
+        ds = phan_tich_thiet_bi(json.loads((FIX / "zte_e2633_clients.json").read_text(encoding="utf-8")))
+        for m in ds:
+            for khoa in ("rx_bps", "tx_bps", "rx_mbps", "tx_mbps"):
+                self.assertIn(khoa, m)
+
+
 if __name__ == "__main__":
     unittest.main()

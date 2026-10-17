@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_HOST, DOMAIN
-from .parser import dem_theo_bang
+from .parser import dem_theo_bang, tong_toc_do
 
 # Chỉ đưa các trường card cần và đủ nhỏ để không vượt giới hạn thuộc tính của Home Assistant.
 TRUONG_MAY = ("mac", "ip", "name", "band", "rssi", "mode", "rx_bps", "tx_bps", "rx_mbps", "tx_mbps")
@@ -31,6 +31,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         ZteMayTheoBangSensor(coordinator, entry, "2.4G"),
         ZteMayTheoBangSensor(coordinator, entry, "5G"),
         ZteBoPhatSensor(coordinator, entry),
+        ZteTongTocDoSensor(coordinator, entry, "rx_mbps", "Tổng tốc độ nhận", "mdi:download-network"),
+        ZteTongTocDoSensor(coordinator, entry, "tx_mbps", "Tổng tốc độ gửi", "mdi:upload-network"),
     ])
     _them_cam_bien_tung_may(hass, entry, coordinator, async_add_entities)
 
@@ -110,6 +112,32 @@ class ZteBoPhatSensor(CoordinatorEntity, SensorEntity):
         return ra
 
 
+class ZteTongTocDoSensor(CoordinatorEntity, SensorEntity):
+    """Tổng tốc độ nhận hoặc gửi của mọi máy WiFi (Mbit/s); thuộc tính mang cả giá trị thô của bộ phát."""
+
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = "Mbit/s"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator, entry: ConfigEntry, khoa: str, ten: str, bieu_tuong: str) -> None:
+        super().__init__(coordinator)
+        self._khoa = khoa
+        self._attr_name = ten
+        self._attr_icon = bieu_tuong
+        self._attr_unique_id = f"{entry.entry_id}_tong_{khoa}"
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, entry.entry_id)})
+
+    @property
+    def native_value(self) -> int | None:
+        du = self.coordinator.data
+        return tong_toc_do(du["clients"])[self._khoa] if du else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        du = self.coordinator.data
+        return {k + "_tong": v for k, v in tong_toc_do(du["clients"]).items()} if du else {}
+
+
 # ── Cảm biến theo TỪNG MÁY: nằm trong chính thiết bị của máy đó (cùng thiết bị với thực thể theo dõi) ──────────────
 
 #: loại → (tên hiển thị, khoá trong dữ liệu máy, đơn vị, lớp thiết bị, nhóm thực thể, biểu tượng)
@@ -120,6 +148,8 @@ LOAI_CAM_BIEN_MAY = {
     "ip": ("Địa chỉ IP", "ip", None, None, EntityCategory.DIAGNOSTIC, "mdi:ip-network"),
     "rx_mbps": ("Tốc độ nhận", "rx_mbps", "Mbit/s", None, None, "mdi:download-network"),
     "tx_mbps": ("Tốc độ gửi", "tx_mbps", "Mbit/s", None, None, "mdi:upload-network"),
+    "rx_bps": ("Tốc độ nhận (giá trị thô)", "rx_bps", None, None, EntityCategory.DIAGNOSTIC, "mdi:download"),
+    "tx_bps": ("Tốc độ gửi (giá trị thô)", "tx_bps", None, None, EntityCategory.DIAGNOSTIC, "mdi:upload"),
     "assoc_s": ("Thời gian kết nối", "assoc_s", UnitOfTime.SECONDS, SensorDeviceClass.DURATION, None, None),
 }
 _UNIQUE_MAY_RE = re.compile(r"^(?P<mac>[0-9a-f]{2}(?::[0-9a-f]{2}){5})_(?P<loai>[a-z_0-9]+)$")
