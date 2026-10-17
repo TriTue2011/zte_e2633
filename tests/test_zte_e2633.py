@@ -72,12 +72,17 @@ class GiaZte(BaseHTTPRequestHandler):
         s = self.server
         s.dem_dang_nhap += 1
         n = int(self.headers.get("Content-Length") or 0)
-        f = {k: v[0] for k, v in parse_qs(self.rfile.read(n).decode()).items()}
+        raw = self.rfile.read(n)
+        f = {k: v[0] for k, v in parse_qs(raw.decode()).items()}
+        # Đúng như ZTE thật (đo từ trình duyệt): header `check` = SHA-256 của body, và đủ các trường, đúng thứ tự.
+        thu_tu = list(parse_qs(raw.decode(), keep_blank_values=True).keys())
         dung = (
             f.get("Username") == s.ten
             and f.get("Password") == hashlib.sha256((MK + TOKEN).encode()).hexdigest()
             and f.get("_sessionTOKEN") == "98765"
             and f.get("action") == "login"
+            and thu_tu == ["Username", "Password", "action", "Frm_Logintoken", "captchaCode", "_sessionTOKEN"]
+            and self.headers.get("Check") == hashlib.sha256(raw).hexdigest()
         )
         if dung:
             return self._gui(200, TRANG_CHU, cookie="SID=ok; Path=/")

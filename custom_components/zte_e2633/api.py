@@ -74,8 +74,9 @@ class ZteE2633:
         )
         self._co_phien = False
 
-    def _doc(self, duong: str, du_lieu: bytes | None = None) -> str:
-        yc = urllib.request.Request(self._goc + duong, data=du_lieu, headers={"Referer": self._goc + "/"})
+    def _doc(self, duong: str, du_lieu: bytes | None = None, them: dict[str, str] | None = None) -> str:
+        tieu_de = {"Referer": self._goc + "/", **(them or {})}
+        yc = urllib.request.Request(self._goc + duong, data=du_lieu, headers=tieu_de)
         try:
             with self._mo.open(yc, timeout=self._cho) as r:
                 return r.read().decode("utf-8", "replace")
@@ -93,13 +94,16 @@ class ZteE2633:
         if not token:
             raise ZteLoiDangNhap("không lấy được token đăng nhập")
         bam = hashlib.sha256((self._mat_khau + token).encode()).hexdigest()
-        du = urllib.parse.urlencode({
-            "Username": self._ten,
-            "Password": bam,
-            "action": "login",
-            "_sessionTOKEN": m.group(1),
-        }).encode()
-        self._doc("/", du)
+        # Đúng thứ tự và các trường mà trình duyệt gửi (đo: body 168 byte). Header `check` là SHA-256 của đúng chuỗi body.
+        du = urllib.parse.urlencode([
+            ("Username", self._ten),
+            ("Password", bam),
+            ("action", "login"),
+            ("Frm_Logintoken", ""),
+            ("captchaCode", ""),
+            ("_sessionTOKEN", m.group(1)),
+        ]).encode()
+        self._doc("/", du, {"Check": hashlib.sha256(du).hexdigest(), "Content-Type": "application/x-www-form-urlencoded"})
         self._co_phien = True
 
     def _lay(self, hanh_dong: str, khoa: str) -> dict | None:
