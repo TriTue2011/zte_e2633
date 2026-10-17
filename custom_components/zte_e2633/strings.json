@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ZTE E2633",
+        "description": "Nhập địa chỉ và tài khoản quản trị của bộ phát WiFi. Tích hợp chỉ đọc danh sách máy.",
+        "data": {
+          "host": "Địa chỉ IP hoặc tên máy",
+          "ten": "Tên đăng nhập",
+          "mat_khau": "Mật khẩu",
+          "xac_minh_ssl": "Kiểm chứng chứng chỉ HTTPS (chỉ bật nếu có chứng chỉ hợp lệ)",
+          "chu_ky": "Chu kỳ đọc (giây)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Nhập lại mật khẩu ZTE",
+        "data": {
+          "mat_khau": "Mật khẩu"
+        }
+      }
+    },
+    "error": {
+      "host_sai": "Địa chỉ chỉ được chứa chữ, số, dấu chấm và dấu gạch ngang.",
+      "dang_nhap": "Không đăng nhập hoặc không đọc được danh sách máy. Kiểm tên đăng nhập, mật khẩu, và xem bộ phát có đang đăng nhập ở nơi khác không.",
+      "ket_noi": "Không tới được bộ phát. Kiểm địa chỉ và mạng."
+    },
+    "abort": {
+      "already_configured": "Bộ phát này đã được thêm.",
+      "reauth_successful": "Đã cập nhật mật khẩu."
+    }
+  }
+}
