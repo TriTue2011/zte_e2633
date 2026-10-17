@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import CONF_HOST, DOMAIN
 
 # Chỉ đưa các trường card cần và đủ nhỏ để không vượt giới hạn thuộc tính của Home Assistant.
-TRUONG_MAY = ("mac", "ip", "name", "band", "rssi", "mode")
+TRUONG_MAY = ("mac", "ip", "name", "band", "rssi", "mode", "rx_bps", "tx_bps")
 
 
 def dong_gon_may(clients: list[dict]) -> list[dict]:

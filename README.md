@@ -11,8 +11,8 @@ cảm biến. Dùng cùng card `mikrotik-topo-lan-card` qua tuỳ chọn `access
 - Mật khẩu chỉ lưu trong cấu hình Home Assistant, không ghi vào log hay thông báo lỗi.
 
 ## Cài đặt
-1. Chép thư mục `custom_components/zte_e2633` vào `config/custom_components/` của Home Assistant, hoặc thêm repo này
-   vào HACS dưới dạng kho tuỳ chỉnh (loại Integration).
+1. HACS → ⋮ → Kho tuỳ chỉnh → `https://github.com/TriTue2011/zte_e2633` → loại *Integration* → Tải xuống. Hoặc chép thư mục
+   `custom_components/zte_e2633` vào `config/custom_components/` của Home Assistant.
 2. Khởi động lại Home Assistant. Vào **Cài đặt → Thiết bị & dịch vụ → Thêm tích hợp → ZTE E2633**.
 3. Nhập địa chỉ (ví dụ `192.168.1.1`), tên đăng nhập và mật khẩu quản trị của bộ phát.
    Tích hợp đăng nhập thử một lần; báo lỗi thì không được thêm.
@@ -35,7 +35,7 @@ access_points:
 ## Dữ liệu cảm biến
 | Thuộc tính | Nội dung |
 |---|---|
-| `clients` | Danh sách máy: `mac`, `ip`, `name`, `band` (`2.4G`/`5G`), `rssi` (dBm), `mode` |
+| `clients` | Danh sách máy: `mac`, `ip`, `name`, `band` (`2.4G`/`5G`), `rssi` (dBm), `mode`, `rx_bps`, `tx_bps` (giá trị thô của bộ phát, đơn vị chưa kiểm chứng) |
 | `ap` | Thông tin bộ phát: `mac`, `ip`, `name`, `firmware` |
 
 ## Trạng thái kiểm chứng (nói thật)
@@ -43,8 +43,15 @@ access_points:
   Máy chủ giả mô phỏng đúng luồng đọc từ mã trang đăng nhập của thiết bị, nhưng **chưa kiểm trên ZTE thật**.
 - Phần giao diện cấu hình và cảm biến của Home Assistant **chưa chạy thử**: môi trường kiểm không có Home Assistant.
   Cần chủ máy thêm tích hợp trên Home Assistant thật và báo kết quả.
-- Nếu ZTE trả «页面过期» (trang hết hạn) sau khi đăng nhập, nguyên nhân có thể là khác biệt giữa luồng này và
-  trình duyệt. Khi đó cần bản ghi yêu cầu mạng lúc đăng nhập bằng trình duyệt (chỉ tên trường, không giá trị).
+- Luồng đăng nhập (form có header `check` = SHA-256 của đúng body) đã được dùng để đọc danh sách máy WiFi thành công **một lần**
+  trên bộ phát thật (17/10/2026) bằng script độc lập; chưa chạy lâu dài. Nếu bộ phát trả «页面过期» (trang hết hạn) thì luồng đã đổi
+  theo bản phần mềm — mở issue kèm tên trường (không kèm giá trị) trong yêu cầu đăng nhập của trình duyệt.
+
+## Chuyển từ `zte_tracker` (bản cũ của kho này)
+Kho này từng là bản sao của một dự án khác; nay chỉ chứa mã tự viết, tên tích hợp là `zte_e2633` (khác `zte_tracker`). Sau khi HACS cập nhật:
+1. Xoá tích hợp `zte_tracker` cũ trong **Thiết bị & dịch vụ** và thêm **ZTE E2633** (nhập lại địa chỉ, tài khoản, mật khẩu).
+2. Cảm biến mới là `sensor.zte_e2633_<địa chỉ>_may_wifi`; sửa `clients_sensor` trong card cho khớp.
+3. Bản cũ có thực thể theo dõi từng máy (`device_tracker`); bản này chỉ có một cảm biến, thông tin từng máy nằm trong thuộc tính `clients`.
 
 ## Phát triển
 ```bash

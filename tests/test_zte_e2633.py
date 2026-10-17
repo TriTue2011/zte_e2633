@@ -154,5 +154,17 @@ class DangNhapVaDocTest(unittest.TestCase):
         self.assertEqual(phan_tich_thiet_bi({"khac": 1}), [])
 
 
+class CamBienTest(unittest.TestCase):
+    def test_truong_cam_bien_la_tap_con_cua_du_lieu_phan_tich(self):
+        """Mọi trường cảm biến đưa ra phải có thật trong dữ liệu parser trả về (không đưa trường ma)."""
+        import ast
+        nguon = (ROOT / "custom_components" / "zte_e2633" / "sensor.py").read_text(encoding="utf-8")
+        truong = next(ast.literal_eval(n.value) for n in ast.walk(ast.parse(nguon))
+                      if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "TRUONG_MAY")
+        mau = phan_tich_thiet_bi(json.loads((FIX / "zte_e2633_clients.json").read_text(encoding="utf-8")))
+        self.assertTrue(mau)
+        self.assertTrue(set(truong) <= set(mau[0]), set(truong) - set(mau[0]))
+
+
 if __name__ == "__main__":
     unittest.main()

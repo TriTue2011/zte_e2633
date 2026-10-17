@@ -1,10 +1,14 @@
 {
-  "domain": "zte_e2633",
-  "name": "ZTE E2633 (máy WiFi)",
-  "codeowners": [],
+  "codeowners": [
+    "@TriTue2011"
+  ],
   "config_flow": true,
   "dependencies": [],
+  "documentation": "https://github.com/TriTue2011/zte_e2633",
+  "domain": "zte_e2633",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/TriTue2011/zte_e2633/issues",
+  "name": "ZTE E2633 (máy WiFi)",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.2.0"
 }
