@@ -7,10 +7,11 @@ cảm biến. Dùng cùng card `mikrotik-topo-lan-card` qua tuỳ chọn `access
 ## Có gì
 - **Mỗi máy WiFi là một thiết bị** (theo địa chỉ MAC, tên theo tên máy) với một thực thể theo dõi `device_tracker`: có mặt khi bộ phát
   còn thấy máy, «không ở nhà» khi vắng. Máy mới vào WiFi tự được thêm; máy đã từng thấy vẫn còn sau khi khởi động lại Home Assistant.
-  Thuộc tính mỗi máy: `band`, `rssi`, `mode`, `assoc_s`, `rx_bps`, `tx_bps`, `ip_address`, `mac_address`.
+  Thuộc tính mỗi máy: `band`, `rssi`, `mode`, `assoc_s`, `ip_address`, `mac_address`, cùng mọi trường gốc khác của bộ phát.
 - **Cảm biến theo từng máy**, nằm trong chính thiết bị của máy đó: Cường độ tín hiệu (dBm), Băng tần, Chế độ WiFi, Địa chỉ IP,
-  Tốc độ nhận/gửi (Mbit/s) và giá trị thô của bộ phát (`RxRateBps`/`TxRateBps`), Thời gian kết nối.
-  Cảm biến **Tổng tốc độ nhận/gửi** (Mbit/s) của cả bộ phát ở thiết bị chính. Máy vắng thì các cảm biến này «không có sẵn».
+  Thời gian kết nối.
+  **Không có tốc độ nhận/gửi theo máy**: bộ phát E2633 luôn trả 0 cho các trường tốc độ (đã thử khi máy đang xem video), nên
+  tích hợp không tạo cảm biến đó. Tốc độ từng máy lấy từ router MikroTik (Kid Control) nếu cần. Máy vắng thì các cảm biến này «không có sẵn».
 - **Hiển thị hết**: mọi trường bộ phát trả về cho máy hoặc cho bộ phát đều hiện (chuẩn hoá hoặc nguyên tên gốc trong thuộc tính của
   thực thể theo dõi / cảm biến **Bộ phát**), kể cả trường mới nếu phần mềm bộ phát thêm.
 - Cảm biến **Máy WiFi** (tổng số máy, thuộc tính `clients` cho card MikroTik), **Máy WiFi 2.4G** và **Máy WiFi 5G** (đếm theo băng tần).
@@ -47,7 +48,7 @@ access_points:
 ## Dữ liệu cảm biến
 | Thuộc tính | Nội dung |
 |---|---|
-| `clients` | Danh sách máy: `mac`, `ip`, `name`, `band` (`2.4G`/`5G`), `rssi` (dBm), `mode`, `rx_bps`, `tx_bps` (giá trị thô, bit/giây) |
+| `clients` | Danh sách máy: `mac`, `ip`, `name`, `band` (`2.4G`/`5G`), `rssi` (dBm), `mode` |
 | `ap` | Thông tin bộ phát: `mac`, `ip`, `name`, `firmware` |
 
 ## Trạng thái kiểm chứng (nói thật)
