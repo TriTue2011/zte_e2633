@@ -37,6 +37,7 @@ class ZteCoordinator(DataUpdateCoordinator):
             hass,
             LOGGER,
             name=DOMAIN,
+            config_entry=entry,
             update_interval=timedelta(seconds=cau_hinh.get(CONF_CHU_KY, CHU_KY_MAC_DINH)),
         )
         self.client = ZteE2633(
@@ -76,5 +77,7 @@ async def _khi_tuy_chon_doi(hass: HomeAssistant, entry: ConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+        coordinator = hass.data[DOMAIN].pop(entry.entry_id, None)
+        if coordinator is not None:
+            coordinator.client.dang_xuat()  # chỉ quên phiên phía máy khách (xem ZteE2633.dang_xuat)
     return ok

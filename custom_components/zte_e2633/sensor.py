@@ -40,6 +40,9 @@ class ZteMayWifiSensor(CoordinatorEntity, SensorEntity):
     _attr_name = "Máy WiFi"
     _attr_icon = "mdi:wifi"
     _attr_state_class = SensorStateClass.MEASUREMENT
+    # Danh sách máy (≈190 byte/máy khi tên dài) vượt giới hạn 16384 byte của recorder từ khoảng 85 máy: recorder khi đó
+    # bỏ TOÀN BỘ thuộc tính của trạng thái. Hai thuộc tính này chỉ để thẻ đọc trạng thái hiện tại, không cần lưu lịch sử.
+    _unrecorded_attributes = frozenset({"clients", "ap"})
 
     def __init__(self, coordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator)
